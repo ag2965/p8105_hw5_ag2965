@@ -117,6 +117,30 @@ homicides_unsolved <- read.csv(url("https://raw.githubusercontent.com/washington
     count()
 ```
 
+```{r}
+#All homicides in Baltimore, MD
+homicides_baltimore <- read.csv(url("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"))%>%
+  janitor::clean_names()%>%
+    unite(city_state, c(city, state), sep = ", ")%>%
+    filter(city_state=="Baltimore, MD")%>%
+    count()
+  
+#All unsolved homicides in Baltimore, MD
+homicides_baltimore_unsolved <- read.csv(url("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"))%>%
+  janitor::clean_names()%>%
+    unite(city_state, c(city, state), sep = ", ")%>%
+    filter(city_state=="Baltimore, MD")%>%
+    filter(disposition=="Closed by arrest" | disposition=="Open/No arrest")%>%
+    count()
+
+proptest=homicides_baltimore%>%
+  prop.test(
+    x="homicides_baltimore_unsolved",
+    n="n_obs",
+    alternative=c("two.sided")
+  )
+```
+
 
 
 For the city of Baltimore, MD, use the prop.test function to estimate the proportion of homicides that are unsolved; save the output of prop.test as an R object, apply the broom::tidy to this object and pull the estimated proportion and confidence intervals from the resulting tidy dataframe.
