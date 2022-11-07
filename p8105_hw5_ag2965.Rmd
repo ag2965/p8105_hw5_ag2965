@@ -7,7 +7,7 @@ editor_options:
   chunk_output_type: inline
 ---
 
-```{r, include = FALSE, message=FALSE, warning=FALSE}
+```{r, include = FALSE}
 library(tidyverse)
 library(pwr)
 library(stringr)
@@ -95,6 +95,10 @@ homicides_df_city <- read.csv(url("https://raw.githubusercontent.com/washingtonp
   group_by(city)%>%
   summarize
 ```
+
+The Washington Post has gathered data on homicides in 50 large U.S. cities and made the data available through a GitHub repository here. You can read their accompanying article here.
+
+Describe the raw data. 
 There are 50 cities and 27 states in this dataset. There are 52,179 total homicides represented in this dataset.
 
 Create a city_state variable (e.g. “Baltimore, MD”) and then summarize within cities to obtain the total number of homicides and the number of unsolved homicides (those for which the disposition is “Closed without arrest” or “Open/No arrest”).
@@ -105,28 +109,15 @@ homicides_city_state <- read.csv(url("https://raw.githubusercontent.com/washingt
     group_by(city_state)%>%
   count()
 
-homicides_closed <- read.csv(url("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"))%>%
+homicides_unsolved <- read.csv(url("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"))%>%
   janitor::clean_names()%>%
     unite(city_state, c(city, state), sep = ", ")%>%
     group_by(city_state)%>%
-    filter(disposition=="Closed by arrest")%>%
-    count()
-    
-homicides_open <- read.csv(url("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"))%>%
-  janitor::clean_names()%>%
-    unite(city_state, c(city, state), sep = ", ")%>%
-    group_by(city_state)%>%
-    filter(disposition=="Open/No arrest")%>%
+    filter(disposition=="Closed by arrest" | disposition=="Open/No arrest")%>%
     count()
 ```
 
 
-df = data.frame(n, s, b) %>% 
-  unite(x, c(n, s), sep = " ", remove = FALSE)
-
-The Washington Post has gathered data on homicides in 50 large U.S. cities and made the data available through a GitHub repository here. You can read their accompanying article here.
-
-Describe the raw data. 
 
 For the city of Baltimore, MD, use the prop.test function to estimate the proportion of homicides that are unsolved; save the output of prop.test as an R object, apply the broom::tidy to this object and pull the estimated proportion and confidence intervals from the resulting tidy dataframe.
 
