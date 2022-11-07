@@ -1,0 +1,169 @@
+---
+title: "p8105_hw5_ag2965"
+author: "Aakriti Shukla"
+date: "2022-11-07"
+output: github_document
+---
+
+```{r, include = FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(pwr)
+library(stringr)
+install.packages("ggpubr")
+
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
+
+#Problem 1
+
+```{r, eval=FALSE}
+con_01 = read_csv("data/con_01.csv")
+con_02 = read_csv("data/con_02.csv")
+con_03 = read_csv("data/con_03.csv") 
+con_04 = read_csv("data/con_04.csv") 
+con_05 = read_csv("data/con_05.csv") 
+con_06 = read_csv("data/con_06.csv") 
+con_07 = read_csv("data/con_07.csv")
+con_08 = read_csv("data/con_08.csv")
+con_09 = read_csv("data/con_09.csv")
+con_10 = read_csv("data/con_10.csv")
+exp_01 = read_csv("data/exp_01.csv")
+exp_02 = read_csv("data/exp_02.csv")
+exp_03 = read_csv("data/exp_03.csv")
+exp_04 = read_csv("data/exp_04.csv")
+exp_05 = read_csv("data/exp_05.csv")
+exp_06 = read_csv("data/exp_06.csv")
+exp_07 = read_csv("data/exp_07.csv")
+exp_08 = read_csv("data/exp_08.csv")
+exp_09 = read_csv("data/exp_09.csv")
+exp_10 = read_csv("data/exp_10.csv")
+```
+
+#how to remove the data/ and the .csv?
+```{r}
+prob1_df2<-data.frame(first_column=c("con_01","con_02","con_03","con_04","con_05"))
+
+list.files(path="data", pattern=".csv", all.files=TRUE,
+    full.names=TRUE)%>%
+      mutate(-".csv")
+prob1_df2<-data.frame(first_column=c())
+```
+
+This zip file contains data from a longitudinal study that included a control arm and an experimental arm. Data for each participant is included in a separate file, and file names include the subject ID and arm.
+
+Create a tidy dataframe containing data from all participants, including the subject ID, arm, and observations over time:
+
+Start with a dataframe containing all file names; the list.files function will help
+Iterate over file names and read in data for each subject using purrr::map and saving the result as a new variable in the dataframe
+Tidy the result; manipulate file names to include control arm and subject ID, make sure weekly observations are “tidy”, and do any other tidying that’s necessary
+Make a spaghetti plot showing observations on each subject over time, and comment on differences between groups.
+
+#Problem 2
+```{r}
+homicides_df <- read.csv(url("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"))%>%
+  janitor::clean_names()
+
+homicides_df <- read.csv(url("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"))%>%
+  janitor::clean_names()%>%
+  group_by(state)%>%
+  summarize
+
+homicides_df <- read.csv(url("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"))%>%
+  janitor::clean_names()%>%
+  group_by(city)%>%
+  summarize
+```
+There are 50 cities and 28 states in this dataset.
+
+```{r}
+homicides_df <- read.csv(url("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"))%>%
+  janitor::clean_names()%>%
+    unite(city_state, c(city, state), sep = ", ")
+```
+
+
+df = data.frame(n, s, b) %>% 
+  unite(x, c(n, s), sep = " ", remove = FALSE)
+
+The Washington Post has gathered data on homicides in 50 large U.S. cities and made the data available through a GitHub repository here. You can read their accompanying article here.
+
+Describe the raw data. Create a city_state variable (e.g. “Baltimore, MD”) and then summarize within cities to obtain the total number of homicides and the number of unsolved homicides (those for which the disposition is “Closed without arrest” or “Open/No arrest”).
+
+For the city of Baltimore, MD, use the prop.test function to estimate the proportion of homicides that are unsolved; save the output of prop.test as an R object, apply the broom::tidy to this object and pull the estimated proportion and confidence intervals from the resulting tidy dataframe.
+
+Now run prop.test for each of the cities in your dataset, and extract both the proportion of unsolved homicides and the confidence interval for each. Do this within a “tidy” pipeline, making use of purrr::map, purrr::map2, list columns and unnest as necessary to create a tidy dataframe with estimated proportions and CIs for each city.
+
+Create a plot that shows the estimates and CIs for each city – check out geom_errorbar for a way to add error bars based on the upper and lower limits. Organize cities according to the proportion of unsolved homicides.
+
+#Problem 3
+When designing an experiment or analysis, a common question is whether it is likely that a true effect will be detected – put differently, whether a false null hypothesis will be rejected. The probability that a false null hypothesis is rejected is referred to as power, and it depends on several factors, including: the sample size; the effect size; and the error variance. In this problem, you will conduct a simulation to explore power in a one-sample t-test.
+
+First set the following design elements:
+
+Fix n=30
+Fix σ=5
+Set μ=0. Generate 5000 datasets from the model
+
+x∼Normal[μ,σ]
+
+We will use the power package to calculate the power of the test. 
+
+#how to calculate p-value?
+```{r}
+sim_mean_sd = function(n=3, mu = 0, sigma = 5) {
+
+  sim_data = tibble(
+    x = rnorm(n, mean = mu, sd = sigma),
+  )
+
+  sim_data %>% 
+    summarize(
+      mu_hat = mean(x),
+      sigma_hat = sd(x)
+    )
+}
+
+output = vector("list", 100)
+
+for (i in 1:100) {
+  output[[i]] = sim_mean_sd(30)
+}
+
+sim_results = bind_rows(output)
+```
+
+```{r}
+res <- t.test(sim_data$mu_hat, mu = 0)
+```
+
+
+```{r}
+t.test(sim_data, mu = 0, sig.level=0.05, type="one.sample", alternative = "two.sided")
+broom::tidy()
+
+sim_power=power.t.test(power = .95, mu=mu_hat, sd=sigma_hat, alternative = "one.sided")
+```
+
+For each dataset, save μ̂  and the p-value arising from a test of H:μ=0 using α=0.05. Hint: to obtain the estimate and p-value, use broom::tidy to clean the output of t.test.
+
+Repeat the above for μ={1,2,3,4,5,6}, and complete the following:
+
+Make a plot showing the proportion of times the null was rejected (the power of the test) on the y axis and the true value of μ on the x axis. Describe the association between effect size and power.
+Make a plot showing the average estimate of μ̂  on the y axis and the true value of μ on the x axis. Make a second plot (or overlay on the first) the average estimate of μ̂  only in samples for which the null was rejected on the y axis and the true value of μ on the x axis. Is the sample average of μ̂  across tests for which the null is rejected approximately equal to the true value of μ? Why or why not?
+
