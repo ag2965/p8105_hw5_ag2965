@@ -3,6 +3,8 @@ title: "p8105_hw5_ag2965"
 author: "Aakriti Shukla"
 date: "2022-11-07"
 output: github_document
+editor_options: 
+  chunk_output_type: inline
 ---
 
 ```{r, include = FALSE, message=FALSE, warning=FALSE}
@@ -79,22 +81,43 @@ Make a spaghetti plot showing observations on each subject over time, and commen
 homicides_df <- read.csv(url("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"))%>%
   janitor::clean_names()
 
-homicides_df <- read.csv(url("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"))%>%
+homicides_df_total <- read.csv(url("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"))%>%
+  janitor::clean_names()%>%
+  count()
+
+homicides_df_state <- read.csv(url("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"))%>%
   janitor::clean_names()%>%
   group_by(state)%>%
   summarize
 
-homicides_df <- read.csv(url("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"))%>%
+homicides_df_city <- read.csv(url("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"))%>%
   janitor::clean_names()%>%
   group_by(city)%>%
   summarize
 ```
-There are 50 cities and 28 states in this dataset.
+There are 50 cities and 27 states in this dataset. There are 52,179 total homicides represented in this dataset.
 
+Create a city_state variable (e.g. “Baltimore, MD”) and then summarize within cities to obtain the total number of homicides and the number of unsolved homicides (those for which the disposition is “Closed without arrest” or “Open/No arrest”).
 ```{r}
-homicides_df <- read.csv(url("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"))%>%
+homicides_city_state <- read.csv(url("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"))%>%
   janitor::clean_names()%>%
-    unite(city_state, c(city, state), sep = ", ")
+    unite(city_state, c(city, state), sep = ", ")%>%
+    group_by(city_state)%>%
+  count()
+
+homicides_closed <- read.csv(url("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"))%>%
+  janitor::clean_names()%>%
+    unite(city_state, c(city, state), sep = ", ")%>%
+    group_by(city_state)%>%
+    filter(disposition=="Closed by arrest")%>%
+    count()
+    
+homicides_open <- read.csv(url("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"))%>%
+  janitor::clean_names()%>%
+    unite(city_state, c(city, state), sep = ", ")%>%
+    group_by(city_state)%>%
+    filter(disposition=="Open/No arrest")%>%
+    count()
 ```
 
 
@@ -103,7 +126,7 @@ df = data.frame(n, s, b) %>%
 
 The Washington Post has gathered data on homicides in 50 large U.S. cities and made the data available through a GitHub repository here. You can read their accompanying article here.
 
-Describe the raw data. Create a city_state variable (e.g. “Baltimore, MD”) and then summarize within cities to obtain the total number of homicides and the number of unsolved homicides (those for which the disposition is “Closed without arrest” or “Open/No arrest”).
+Describe the raw data. 
 
 For the city of Baltimore, MD, use the prop.test function to estimate the proportion of homicides that are unsolved; save the output of prop.test as an R object, apply the broom::tidy to this object and pull the estimated proportion and confidence intervals from the resulting tidy dataframe.
 
