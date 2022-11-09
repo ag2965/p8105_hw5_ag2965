@@ -125,45 +125,52 @@ homicide_unsolved_solved %>%
 
 
 ```{r}
-#All homicides in Baltimore, MD
-homicides_baltimore=homicides_df%>%
+unsolved_homicides=homicides_df%>%
   janitor::clean_names()%>%
     unite(city_state, c(city, state), sep = ", ")%>%
-    filter(city_state=="Baltimore, MD")%>%
-    count()
-  
-#All unsolved homicides in Baltimore, MD
-homicides_baltimore_unsolved=homicides_df%>%
-  janitor::clean_names()%>%
-    unite(city_state, c(city, state), sep = ", ")%>%
-    filter(city_state=="Baltimore, MD")%>%
-    filter(disposition=="Closed by arrest" | disposition=="Open/No arrest")%>%
-    count()
+    group_by(city_state)%>%
+    summarize(
+      unsolved=sum(disposition=="Closed by arrest" | disposition=="Open/No arrest"),
+      total=n())
 
-proptest=homicides_baltimore%>%
+baltimore_homicides=unsolved_homicides%>%
+  filter(city_state %in% "Baltimore, MD")
+```
+
+```{r}
+prop_unsolved=function(x_sum, n_total) {
+
+proptest_unsolved=
   prop.test(
-        x="homicides_baltimore_unsolved",
-        n="homicides_baltimore",
+        x=x_sum,
+        n=n_total,
         conf.level = 0.95, 
-        correct = TRUE)
-    alternative=c("two.sided"),
-    correct = TRUE
-  )
+        alternative=c("two.sided"),
+        correct = TRUE)%>%
+  broom::tidy()%>%
+   select(estimate,conf.low,conf.high)
+
+proptest_unsolved
+}
+
+prop_unsolved(pull(baltimore_homicides,unsolved), pull(baltimore_homicides,total))
+
+use map2 purrr
+pipe in DataFrame
+instead of using pull functions use the arguments
+```
+
+
+```{r}
+proptest(pull(baltimore_homicides, n), pull(homicides_baltimore_unsolved, n))
+
 ```
 
 ```{r}
-
-```{r}
-
-
-prop.test(
-  x=pull(homicides_baltimore), "no"
-  n="total"
-  alternative="two.sided",
-  conf.level=0.95
-)
-```
-
+prop_unsolved=function(unsolved, total)
+  
+unsolved_homicides%>%
+output=map2(.x=unsolved, .y=total)
 ```
 
 
