@@ -164,7 +164,8 @@ unsolved_homicides%>%
 ggplot(aes(x = city_state, y = estimate)) +
 geom_point() +
 labs(x = "Location", y= "Proportion of Unsolved Homicides") +
-geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.5)
+geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.5) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
 
 
