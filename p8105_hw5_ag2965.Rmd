@@ -163,9 +163,8 @@ unsolved_homicides%>%
   unnest(prop_unsolved_df)%>%
 ggplot(aes(x = city_state, y = estimate)) +
 geom_point() +
-labs(x = "Group", shape = "Group") +
-guides(color = FALSE)
-geom_errorbar
+labs(x = "Location", y= "Proportion of Unsolved Homicides") +
+geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.5)
 ```
 
 
