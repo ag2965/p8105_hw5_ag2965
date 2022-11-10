@@ -155,9 +155,12 @@ proptest_unsolved
 
 prop_unsolved(pull(baltimore_homicides,unsolved), pull(baltimore_homicides,total))
 
-use map2 purrr
-pipe in DataFrame
-instead of using pull functions use the arguments
+unsolved_homicides%>%
+  mutate(
+    prop_unsolved_df = 
+      map2(.x = unsolved, .y = total, ~prop_unsolved(x = .x, n = .y))
+  ) %>% 
+  unnest(prop_unsolved_df)
 ```
 
 
