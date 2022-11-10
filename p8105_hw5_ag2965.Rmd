@@ -160,21 +160,14 @@ unsolved_homicides%>%
     prop_unsolved_df = 
       map2(.x = unsolved, .y = total, ~prop_unsolved(x = .x, n = .y))
   ) %>% 
-  unnest(prop_unsolved_df)
+  unnest(prop_unsolved_df)%>%
+ggplot(aes(x = city_state, y = estimate)) +
+geom_point() +
+labs(x = "Group", shape = "Group") +
+guides(color = FALSE)
+geom_errorbar
 ```
 
-
-```{r}
-proptest(pull(baltimore_homicides, n), pull(homicides_baltimore_unsolved, n))
-
-```
-
-```{r}
-prop_unsolved=function(unsolved, total)
-  
-unsolved_homicides%>%
-output=map2(.x=unsolved, .y=total)
-```
 
 
 For the city of Baltimore, MD, use the prop.test function to estimate the proportion of homicides that are unsolved; save the output of prop.test as an R object, apply the broom::tidy to this object and pull the estimated proportion and confidence intervals from the resulting tidy dataframe.
