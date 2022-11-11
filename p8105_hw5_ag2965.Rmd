@@ -11,7 +11,6 @@ editor_options:
 library(tidyverse)
 library(pwr)
 library(stringr)
-install.packages("ggpubr")
 
 knitr::opts_chunk$set(
 	echo = TRUE,
@@ -61,10 +60,6 @@ exp_10 = read_csv("data/exp_10.csv")
 ```{r}
 prob1_df2<-data.frame(first_column=c("con_01","con_02","con_03","con_04","con_05"))
 
-list.files(path="data", pattern=".csv", all.files=TRUE,
-    full.names=TRUE)%>%
-      mutate(-".csv")
-prob1_df2<-data.frame(first_column=c())
 ```
 
 This zip file contains data from a longitudinal study that included a control arm and an experimental arm. Data for each participant is included in a separate file, and file names include the subject ID and arm.
@@ -77,6 +72,9 @@ Tidy the result; manipulate file names to include control arm and subject ID, ma
 Make a spaghetti plot showing observations on each subject over time, and comment on differences between groups.
 
 #Problem 2
+
+The Washington Post has gathered data on homicides in 50 large U.S. cities and made the data available through a GitHub repository here. You can read their accompanying article here.
+
 ```{r}
 homicides_df <- read.csv(url("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"))%>%
   janitor::clean_names()
@@ -96,12 +94,8 @@ homicides_df_city=homicides_df%>%
   summarize
 ```
 
-The Washington Post has gathered data on homicides in 50 large U.S. cities and made the data available through a GitHub repository here. You can read their accompanying article here.
-
 Describe the raw data. 
-There are 50 cities and 27 states in this dataset. There are 52,179 total homicides represented in this dataset.
-
-Create a city_state variable (e.g. “Baltimore, MD”) and then summarize within cities to obtain the total number of homicides and the number of unsolved homicides (those for which the disposition is “Closed without arrest” or “Open/No arrest”).
+There are 50 cities and 27 states in this dataset. There are 52,179 total homicides represented in this dataset.The variables included in this dataframe include the case ID, the date the homicide was reported, the victim’s first and last name, age, race, and sex, as well as the the following regarding the location of the crime: the city and state and the latitude and longitude. There is also data on the disposition of the case, which includes closed without arrest, closed by arrest, and opened/no arrest. The  dataset has `r nrow(homicides_df)` rows and `r ncol(homicides_df)` columns in the dataset
 
 
 ```{r}
@@ -216,7 +210,7 @@ stats_tib =
     data = new_list
   ) %>%
   mutate(
-    ttest_results = map(.x = data, ~t_test_clean(.x))
+    ttest_results = map(.x = data, ~t_test(.x))
   ) %>%
   unnest(ttest_results) %>%
   janitor::clean_names() %>%
@@ -245,20 +239,23 @@ new_tib =
     results = map(.x = mu, ~generate_results(mu = .x))) %>%
       unnest(results)
 
-ggplot(data=new_tib, aes(x = mu, y = prop_rej)) +
+power_test=ggplot(data=new_tib, aes(x = mu, y = prop_rej)) +
 geom_bar(stat="identity") +
 labs(x = "Mu", y= "Proportion Rejected") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
     ggtitle("Power of test")
  
-ggplot(data=new_tib, aes(x = mu, y = avg_mu_hat)) +
+mu_hat_estimate=ggplot(data=new_tib, aes(x = mu, y = avg_mu_hat)) +
 geom_bar(stat="identity") +
 labs(x = "Mu", y= "Estimate of Mu-hat") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
-    ggtitle("Estimate of Mu-hat at Varying True Values of Mu")
+    ggtitle("Mu-hat at True Values of Mu")
+
+library(patchwork)
+power_test + mu_hat_estimate
   
- Make a second plot (or overlay on the first) the average estimate of μ̂  only in samples for which the null was rejected on the y axis and the true value of μ on the x axis. Is the sample average of μ̂  across tests for which the null is rejected approximately equal to the true value of μ? Why or why not?
 ```
 
 ```
+ Make a second plot (or overlay on the first) the average estimate of μ̂  only in samples for which the null was rejected on the y axis and the true value of μ on the x axis. Is the sample average of μ̂  across tests for which the null is rejected approximately equal to the true value of μ? Why or why not?
 
