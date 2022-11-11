@@ -143,7 +143,7 @@ graph=unsolved_homicides%>%
     prop_unsolved_df = 
       map2(.x = unsolved, .y = total, ~prop_unsolved(x = .x, n = .y))
   ) %>% 
-  unnest(prop_unsolved_df)%>%
+  unnest(prop_unsolved_df)
 
 graph
   
@@ -183,7 +183,7 @@ Make a plot showing the proportion of times the null was rejected (the power of 
 Make a plot showing the average estimate of μ̂  on the y axis and the true value of μ on the x axis. Make a second plot (or overlay on the first) the average estimate of μ̂  only in samples for which the null was rejected on the y axis and the true value of μ on the x axis. Is the sample average of μ̂  across tests for which the null is rejected approximately equal to the true value of μ? Why or why not?
 
 ```{r}
-t_test_clean = function(df){
+t_test = function(df){
   power_df <- t.test(df,
          alternative = c("two.sided"),
          mu = 0,
@@ -245,12 +245,20 @@ new_tib =
     results = map(.x = mu, ~generate_results(mu = .x))) %>%
       unnest(results)
 
-sim_power_df %>% 
-  mutate(
-    power = str_c("n = ", generate_results),
-    power = fct_inorder(results)) %>% 
-  ggplot(aes(x = results, y = mu_hat, fill = results)) + 
-  geom_violin() + 
-  facet_grid(. ~ true_sd)
+ggplot(data=new_tib, aes(x = mu, y = prop_rej)) +
+geom_bar(stat="identity") +
+labs(x = "Mu", y= "Proportion Rejected") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+    ggtitle("Power of test")
+ 
+ggplot(data=new_tib, aes(x = mu, y = avg_mu_hat)) +
+geom_bar(stat="identity") +
+labs(x = "Mu", y= "Estimate of Mu-hat") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+    ggtitle("Estimate of Mu-hat at Varying True Values of Mu")
+  
+ Make a second plot (or overlay on the first) the average estimate of μ̂  only in samples for which the null was rejected on the y axis and the true value of μ on the x axis. Is the sample average of μ̂  across tests for which the null is rejected approximately equal to the true value of μ? Why or why not?
+```
+
 ```
 
