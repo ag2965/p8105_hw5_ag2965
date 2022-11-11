@@ -59,7 +59,6 @@ exp_10 = read_csv("data/exp_10.csv")
 #how to remove the data/ and the .csv?
 ```{r}
 prob1_df2<-data.frame(first_column=c("con_01","con_02","con_03","con_04","con_05"))
-
 ```
 
 This zip file contains data from a longitudinal study that included a control arm and an experimental arm. Data for each participant is included in a separate file, and file names include the subject ID and arm.
@@ -71,10 +70,12 @@ Iterate over file names and read in data for each subject using purrr::map and s
 Tidy the result; manipulate file names to include control arm and subject ID, make sure weekly observations are “tidy”, and do any other tidying that’s necessary
 Make a spaghetti plot showing observations on each subject over time, and comment on differences between groups.
 
+
+
 #Problem 2
+Homicide data in 50 large U.S. cities - The Washington Post data
 
-The Washington Post has gathered data on homicides in 50 large U.S. cities and made the data available through a GitHub repository here. You can read their accompanying article here.
-
+Let's load the data. 
 ```{r}
 homicides_df <- read.csv(url("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"))%>%
   janitor::clean_names()
@@ -94,10 +95,10 @@ homicides_df_city=homicides_df%>%
   summarize
 ```
 
-Describe the raw data. 
-There are 50 cities and 27 states in this dataset. There are 52,179 total homicides represented in this dataset.The variables included in this dataframe include the case ID, the date the homicide was reported, the victim’s first and last name, age, race, and sex, as well as the the following regarding the location of the crime: the city and state and the latitude and longitude. There is also data on the disposition of the case, which includes closed without arrest, closed by arrest, and opened/no arrest. The  dataset has `r nrow(homicides_df)` rows and `r ncol(homicides_df)` columns in the dataset
 
+There are 50 cities and 27 states in this dataset. There are 52,179 total homicides represented in this dataset.The variables included in this dataframe include the case ID, the date the homicide was reported, the victim’s first and last name, age, race, and sex, as well as the the following regarding the location of the crime: the city and state and the latitude and longitude. There is also data on the disposition of the case, which includes closed without arrest, closed by arrest, and opened/no arrest. The  dataset has `r nrow(homicides_df)` rows and `r ncol(homicides_df)` columns.
 
+Below, we have created a table with the number of unsolved and total homicides by city. Unsolved homicides are those that have a disposition of "Closed by arrest" or "Open/No arrest".
 ```{r}
 unsolved_homicides=homicides_df%>%
   janitor::clean_names()%>%
@@ -109,7 +110,11 @@ unsolved_homicides=homicides_df%>%
 
 unsolved_homicides%>%
   knitr::kable()
+```
 
+We then created a dataframe for homicides in Baltimore and used the prop.test function to estimate the proportion of homicides that are unsolved. 
+
+```{r}
 baltimore_homicides=unsolved_homicides%>%
   filter(city_state %in% "Baltimore, MD")
 ```
@@ -131,17 +136,20 @@ proptest_unsolved
 }
 
 prop_unsolved(pull(baltimore_homicides,unsolved), pull(baltimore_homicides,total))
+```
 
-graph=unsolved_homicides%>%
+We then used this function to for each of the cities in the dataset and extracted the proportion of unsolved homicides and the confidence interval for each using the purrr::map2 function. We also creatd a plot that shows the estimates and CIs for each city along with error bars.
+```{r}
+unsolved_cities=unsolved_homicides%>%
   mutate(
     prop_unsolved_df = 
       map2(.x = unsolved, .y = total, ~prop_unsolved(x = .x, n = .y))
   ) %>% 
   unnest(prop_unsolved_df)
 
-graph
+unsolved_cities
   
-  ggplot(data=graph, aes(x = fct_reorder(city_state, estimate), y = estimate)) +
+  ggplot(data=unsolved_cities, aes(x = fct_reorder(city_state, estimate), y = estimate)) +
 geom_point() +
 labs(x = "Location", y= "Proportion") +
 geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.5) +
@@ -150,31 +158,9 @@ geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.5) +
 ```
 
 
-
-For the city of Baltimore, MD, use the prop.test function to estimate the proportion of homicides that are unsolved; save the output of prop.test as an R object, apply the broom::tidy to this object and pull the estimated proportion and confidence intervals from the resulting tidy dataframe.
-
-Now run prop.test for each of the cities in your dataset, and extract both the proportion of unsolved homicides and the confidence interval for each. Do this within a “tidy” pipeline, making use of purrr::map, purrr::map2, list columns and unnest as necessary to create a tidy dataframe with estimated proportions and CIs for each city.
-
-Create a plot that shows the estimates and CIs for each city – check out geom_errorbar for a way to add error bars based on the upper and lower limits. Organize cities according to the proportion of unsolved homicides.
-
 #Problem 3
 
-When designing an experiment or analysis, a common question is whether it is likely that a true effect will be detected – put differently, whether a false null hypothesis will be rejected. The probability that a false null hypothesis is rejected is referred to as power, and it depends on several factors, including: the sample size; the effect size; and the error variance. In this problem, you will conduct a simulation to explore power in a one-sample t-test.
-
-First set the following design elements:
-
-Fix n=30
-Fix σ=5
-Set μ=0. Generate 5000 datasets from the model
-
-x∼Normal[μ,σ]
-
-For each dataset, save μ̂  and the p-value arising from a test of H:μ=0 using α=0.05. Hint: to obtain the estimate and p-value, use broom::tidy to clean the output of t.test.
-
-Repeat the above for μ={1,2,3,4,5,6}, and complete the following:
-
-Make a plot showing the proportion of times the null was rejected (the power of the test) on the y axis and the true value of μ on the x axis. Describe the association between effect size and power.
-Make a plot showing the average estimate of μ̂  on the y axis and the true value of μ on the x axis. Make a second plot (or overlay on the first) the average estimate of μ̂  only in samples for which the null was rejected on the y axis and the true value of μ on the x axis. Is the sample average of μ̂  across tests for which the null is rejected approximately equal to the true value of μ? Why or why not?
+We created a simulation to explore power in a one-sample t-test with the following design elements: n=30, σ=5, μ=0 and we generated 5000 datasets from the mode. For each dataset, we have saved μ̂  and the p-value arising from a test of H:μ=0 using α=0.05.I have repeated this for μ={1,2,3,4,5,6}.
 
 ```{r}
 t_test = function(df){
@@ -238,24 +224,54 @@ new_tib =
   mutate(
     results = map(.x = mu, ~generate_results(mu = .x))) %>%
       unnest(results)
+```
 
+
+Below, I have made a plot showing the proportion of times the null was rejected (the power of the test) on the y axis and the true value of μ on the x axis. I have found that as effect size increases, as does power. 
+
+```{r}
 power_test=ggplot(data=new_tib, aes(x = mu, y = prop_rej)) +
 geom_bar(stat="identity") +
 labs(x = "Mu", y= "Proportion Rejected") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
     ggtitle("Power of test")
- 
+```
+
+Below, I have  made a plot (left panel) showing the average estimate of μ̂  on the y axis and the true value of μ on the x axis. Make a second plot (or overlay on the first) the average estimate of μ̂  only in samples for which the null was rejected on the y axis and the true value of μ on the x axis. Is the sample average of μ̂  across tests for which the null is rejected approximately equal to the true value of μ? Why or why not?
+```{r}
 mu_hat_estimate=ggplot(data=new_tib, aes(x = mu, y = avg_mu_hat)) +
 geom_bar(stat="identity") +
 labs(x = "Mu", y= "Estimate of Mu-hat") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
     ggtitle("Mu-hat at True Values of Mu")
 
+
+#what to do with the below?
+rej_tib = stats_tib %>%
+  mutate(
+    rej = p_value < 0.05
+  ) %>%
+  summarize(
+    tot = n(),
+    tot_rej = sum(rej),
+    prop_rej = tot_rej/tot,
+    avg_mu_hat = mean(estimate)
+  )
+return(fin_tib)
+}
+
+generate_results()
+
+new_tib =
+  tibble(
+    mu = c(0, 1, 2, 3, 4, 5, 6)
+  ) %>%
+  mutate(
+    results = map(.x = mu, ~generate_results(mu = .x))) %>%
+      unnest(results)
+
+
 library(patchwork)
-power_test + mu_hat_estimate
+mu_hat_estimate
   
 ```
-
-```
- Make a second plot (or overlay on the first) the average estimate of μ̂  only in samples for which the null was rejected on the y axis and the true value of μ on the x axis. Is the sample average of μ̂  across tests for which the null is rejected approximately equal to the true value of μ? Why or why not?
-
