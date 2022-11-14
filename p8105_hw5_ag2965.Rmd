@@ -172,13 +172,9 @@ t_test = function(df){
   return(power_df)
 }
 
-n_iter = 5
-
-mu = 0
-
 generate_results = function(mu = 0,
                             sigma = 5,
-                            n_iter = 50,
+                            n_iter = 5000,
                             n_obs = 30){
 
 new_list = list()
@@ -202,7 +198,7 @@ stats_tib =
   janitor::clean_names() %>%
   select(estimate, p_value)
 
-fin_tib = stats_tib %>%
+final_tib = stats_tib %>%
   mutate(
     rej = p_value < 0.05
   ) %>%
@@ -212,7 +208,7 @@ fin_tib = stats_tib %>%
     prop_rej = tot_rej/tot,
     avg_mu_hat = mean(estimate)
   )
-return(fin_tib)
+return(final_tib)
 }
 
 generate_results()
@@ -235,9 +231,11 @@ geom_bar(stat="identity") +
 labs(x = "Mu", y= "Proportion Rejected") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
     ggtitle("Power of test")
+
+power_test
 ```
 
-Below, I have  made a plot (left panel) showing the average estimate of μ̂  on the y axis and the true value of μ on the x axis. Make a second plot (or overlay on the first) the average estimate of μ̂  only in samples for which the null was rejected on the y axis and the true value of μ on the x axis. Is the sample average of μ̂  across tests for which the null is rejected approximately equal to the true value of μ? Why or why not?
+Below, I have  made a plot (left panel) showing the average estimate of μ̂  on the y axis and the true value of μ on the x axis. 
 ```{r}
 mu_hat_estimate=ggplot(data=new_tib, aes(x = mu, y = avg_mu_hat)) +
 geom_bar(stat="identity") +
@@ -245,8 +243,14 @@ labs(x = "Mu", y= "Estimate of Mu-hat") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
     ggtitle("Mu-hat at True Values of Mu")
 
+mu_hat_estimate
 
-#what to do with the below?
+```
+Make a second plot (or overlay on the first) the average estimate of μ̂  only in samples for which the null was rejected on the y axis and the true value of μ on the x axis. Is the sample average of μ̂  across tests for which the null is rejected approximately equal to the true value of μ? Why or why not?
+
+The sample average of mu-hat for across testes for which the null hypothesis is rejected is not approximately equal to the true value of mu because these samples were sufficiently different than mu, allowing for the rejection of the null hypothesis.
+
+```{r}
 rej_tib = stats_tib %>%
   mutate(
     rej = p_value < 0.05
@@ -255,7 +259,7 @@ rej_tib = stats_tib %>%
     tot = n(),
     tot_rej = sum(rej),
     prop_rej = tot_rej/tot,
-    avg_mu_hat = mean(estimate)
+    rej_avg_mu_hat = mean(estimate)
   )
 return(fin_tib)
 }
@@ -269,6 +273,13 @@ new_tib =
   mutate(
     results = map(.x = mu, ~generate_results(mu = .x))) %>%
       unnest(results)
+
+
+rej_mu_hat_estimate=ggplot(data=rej_tib, aes(x = mu, y = rej_avg_mu_hat)) +
+geom_bar(stat="identity") +
+labs(x = "Mu", y= "Estimate of Mu-hat for Rejected Samples") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+    ggtitle("Mu-hat at True Values of Mu for Rejected Samples")
 
 
 library(patchwork)
