@@ -142,7 +142,7 @@ proptest_unsolved
 prop_unsolved(pull(baltimore_homicides,unsolved), pull(baltimore_homicides,total))
 ```
 
-We then used this function to for each of the cities in the dataset and extracted the proportion of unsolved homicides and the confidence interval for each using the purrr::map2 function. We also creatd a plot that shows the estimates and CIs for each city along with error bars.
+We then used this function to for each of the cities in the dataset and extracted the proportion of unsolved homicides and the confidence interval for each using the purrr::map2 function. We also creatd a plot that shows the estimates and CIs for each city along with error bars. Tulsa, AL has a long error bar as there is only 1 observation. This plot shows us that the great majority of homicides are unsolved in all locations.
 ```{r}
 unsolved_cities=unsolved_homicides%>%
   mutate(
