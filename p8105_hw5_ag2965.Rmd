@@ -32,7 +32,7 @@ scale_fill_discrete = scale_fill_viridis_d
 ```
 
 #Problem 1
-
+First, we loaded the data and joined the individual files using the list.files and str_c() functions. We then iterated over file names and read in the data for each subject.
 ```{r}
 longi_df = 
   tibble(
@@ -45,6 +45,7 @@ longi_df =
 longi_df
 ```
 
+We then tidied the result and manipulated file names to include the control arm and subject ID. We also made sure that weekly observations were tidied.
 ```{r}
 tidy_df = 
   longi_df %>% 
@@ -62,7 +63,7 @@ tidy_df =
 tidy_df
 ```
 
-
+We then created 2 spaghetti plots to compare observations for control and experimental groups. We can see that for the control group, the outcome did not change or had a slight downward slope downward slope. For the experimental group, the outcome had a positive slope over time. These findings suggest that the experimental group experienced a change over time, while the control group did not.
 ```{r}
 tidy_df %>% 
   ggplot(aes(x = week, y = outcome, group = subj, color = group)) + 
