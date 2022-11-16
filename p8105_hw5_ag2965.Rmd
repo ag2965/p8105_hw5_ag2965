@@ -7,6 +7,7 @@ editor_options:
   chunk_output_type: inline
 ---
 
+Due date: November 16, 2022
 ```{r, include = FALSE}
 library(tidyverse)
 library(pwr)
@@ -30,6 +31,8 @@ options(
 scale_colour_discrete = scale_colour_viridis_d
 scale_fill_discrete = scale_fill_viridis_d
 ```
+
+
 
 #Problem 1
 First, we loaded the data and joined the individual files using the list.files and str_c() functions. We then iterated over file names and read in the data for each subject.
@@ -76,7 +79,10 @@ labs(x = "Week", y= "Outcome") +
 ```
 
 
+
 #Problem 2
+
+
 Homicide data in 50 large U.S. cities - The Washington Post data
 
 Let's load the data. 
@@ -145,7 +151,8 @@ proptest_unsolved
 prop_unsolved(pull(baltimore_homicides,unsolved), pull(baltimore_homicides,total))
 ```
 
-We then used this function to for each of the cities in the dataset and extracted the proportion of unsolved homicides and the confidence interval for each using the purrr::map2 function. We also creatd a plot that shows the estimates and CIs for each city along with error bars. Tulsa, AL has a long error bar as there is only 1 observation. This plot shows us that the great majority of homicides are unsolved in all locations.
+We then used this function to for each of the cities in the dataset and extracted the proportion of unsolved homicides and the confidence interval for each using the purrr::map2 function. We also creatd a plot that shows the estimates and CIs for each city along with error bars. This plot shows us that the great majority of homicides are unsolved in all locations. The lowest proportion of unsolved homicides were in Denver, San Diego, and Albuquerque, and the highest were in Louisville, Oakland, and Pittsburgh.
+
 ```{r}
 unsolved_cities=unsolved_homicides%>%
   mutate(
@@ -165,7 +172,10 @@ geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.5) +
 ```
 
 
+
+
 #Problem 3
+
 
 We created a simulation to explore power in a one-sample t-test with the following design elements: n=30, σ=5, μ=0 and we generated 5000 datasets from the mode. For each dataset, we have saved μ̂  and the p-value arising from a test of H:μ=0 using α=0.05.I have repeated this for μ={1,2,3,4,5,6}.
 
@@ -257,11 +267,9 @@ labs(x = "Mu", y= "Estimate of Mu-hat") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
     ggtitle("Mu-hat at True Values of Mu")
 
-mu_hat_estimate
-
 ```
-Make a second plot (or overlay on the first) the average estimate of μ̂  only in samples for which the null was rejected on the y axis and the true value of μ on the x axis. Is the sample average of μ̂  across tests for which the null is rejected approximately equal to the true value of μ? Why or why not?
 
+We then made a second plot with the average estimate of μ̂  only in samples for which the null was rejected on the y axis and the true value of μ on the x axis.
 The sample average of mu-hat for across tests for which the null hypothesis is rejected is not  equal to the true value of mu because these samples were sufficiently different than mu, as this incldued only those values in which the null hypothesis was rejected. 
 
 
@@ -335,8 +343,6 @@ rejected = new_tib_rej %>%
   labs(x = "Mu", y= "Estimate of Mu-hat") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
     ggtitle("Mu-hat at Mu for Rejected Cases")
-
-rejected
 
 library(patchwork)
 mu_hat_estimate + rejected
