@@ -331,9 +331,11 @@ rejected = new_tib_rej %>%
   geom_point(aes(color = mu))+
   labs(x = "Mu", y= "Estimate of Mu-hat") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
-    ggtitle("Mu-hat at True Values of Mu for Rejected Cases")
+    ggtitle("Mu-hat at Mu for Rejected Cases")
 
 rejected
 
+library(patchwork)
+mu_hat_estimate + rejected
 ```
 
