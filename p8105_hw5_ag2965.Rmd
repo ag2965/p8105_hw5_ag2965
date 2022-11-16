@@ -107,6 +107,9 @@ Below, we have created a table with the number of unsolved and total homicides b
 unsolved_homicides=homicides_df%>%
   janitor::clean_names()%>%
     unite(city_state, c(city, state), sep = ", ")%>%
+    mutate(
+      city_state=case_when(city_state=="Tulsa, AL" ~ "Tulsa, OK", TRUE~city_state)
+    )%>%
     group_by(city_state)%>%
     summarize(
       unsolved=sum(disposition=="Closed by arrest" | disposition=="Open/No arrest"),
@@ -259,7 +262,7 @@ mu_hat_estimate
 ```
 Make a second plot (or overlay on the first) the average estimate of μ̂  only in samples for which the null was rejected on the y axis and the true value of μ on the x axis. Is the sample average of μ̂  across tests for which the null is rejected approximately equal to the true value of μ? Why or why not?
 
-The sample average of mu-hat for across tests for which the null hypothesis is rejected is not approximately equal to the true value of mu because these samples were sufficiently different than mu, allowing for the rejection of the null hypothesis.
+The sample average of mu-hat for across tests for which the null hypothesis is rejected is not  equal to the true value of mu because these samples were sufficiently different than mu, as this incldued only those values in which the null hypothesis was rejected. 
 
 
 ```{r}
