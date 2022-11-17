@@ -191,7 +191,7 @@ t_test_clean = function(df){
 
 generate_results = function(mu = 0,
                             sigma = 5,
-                            n_iter = 50,
+                            n_iter = 5000,
                             n_obs = 30){
 
 new_list = list()
@@ -285,7 +285,7 @@ t_test_clean = function(df){
 
 generate_results_rej = function(mu = 0,
                             sigma = 5,
-                            n_iter = 50,
+                            n_iter = 5000,
                             n_obs = 30){
 
 new_list_rej = list()
@@ -313,6 +313,7 @@ fin_tib_rej = stats_tib_rej %>%
   mutate(
     rej = p_value < 0.05
   ) %>%
+  filter(p_value <0.05) %>%
   summarize(
     tot = n(),
     tot_rej = sum(rej),
